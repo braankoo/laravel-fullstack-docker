@@ -58,13 +58,11 @@ set -o allexport
 source ./infrastructure/.env
 set +o allexport
 
-# Proveri da li je NETWORK_NAME postavljen
 if [ -z "$NETWORK_NAME" ]; then
   echo "NETWORK_NAME nije definisan u .env fajlu."
   exit 1
 fi
 
-# Zameni __NETWORK_NAME__ u docker-compose.yml fajlu
 sed -i "" "s/__NETWORK_NAME__/${NETWORK_NAME}/g" ./infrastructure/docker-compose.yml
 
 touch ./infrastructure/nginx/sites/$APPLICATION_NAME.conf
