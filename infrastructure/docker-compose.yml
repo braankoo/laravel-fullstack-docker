@@ -1,0 +1,61 @@
+version: "3.8"
+services:
+  php:
+    container_name: ${APPLICATION_NAME}_php
+    build:
+      context: ./PHP
+      args:
+        user: mailer
+        uid: 1000
+      dockerfile: Dockerfile
+    networks:
+      - ${NETWORK_NAME}
+    volumes:
+      - ../backend:/var/www/api
+  mysql:
+    container_name: ${APPLICATION_NAME}_mysql
+    build:
+      context: ./MySQL
+      dockerfile: Dockerfile
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+  nginx:
+    container_name: ${APPLICATION_NAME}_nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+      args:
+        php_container: ${APPLICATION_NAME}_php
+    networks:
+      - ${NETWORK_NAME}
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/sites:/etc/nginx/sites-enabled
+      - ../backend:/var/www/api
+    depends_on:
+      - php
+  node:
+    container_name: ${APPLICATION_NAME}_node
+    build:
+      context: ./node-js/
+      dockerfile: Dockerfile
+      args:
+        workdir: /var/www/fe
+    volumes:
+      - ../frontend/:/var/www/fe
+    ports:
+      - 8080:8080
+    networks:
+      - ${NETWORK_NAME}
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true 
+    tty: true
+networks:
+  my-app-network:
+    driver: bridge
